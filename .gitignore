@@ -1,0 +1,7 @@
+/IntelliHome-Plugin-Relay-*
+/.build
+/_build*
+/Build
+MYMETA.*
+!META.json
+/.prove
