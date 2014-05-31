@@ -51,22 +51,51 @@ use strict;
 use 5.008_005;
 our $VERSION = '0.01';
 use Moose;
+use Module::Load;
+use IntelliHome::Connector;
 extends 'IntelliHome::Plugin::Base';
 
-sub on{
- my $self=shift;
- my $tag=shift;
- my $GPIO=$self->IntelliHome->Backend->search_gpio($tag);
-use Data::Dumper;
-print Dumper($GPIO);
+sub on {
+    my $self = shift;
+    my $Hypo = shift;
+    my $tag  = join( " ", @{ $Hypo->result } );
+    chop $tag;
+    $self->_command( $tag, "on" );
 }
 
-sub off{
-my $self=shift;
- my $tag=shift;
- my $GPIO=$self->IntelliHome->Backend->search_gpio($tag);
-use Data::Dumper;
-print Dumper($GPIO);
+sub off {
+    my $self = shift;
+    my $Hypo = shift;
+    my $tag  = join( " ", @{ $Hypo->result } );
+    chop $tag;
+    $self->_command( $tag, "off" );
+}
+
+sub _command {
+    my $self   = shift;
+    my $tag    = shift;
+    my $action = shift;
+    my $GPIO   = $self->IntelliHome->Backend->search_gpio($tag);
+    $self->IntelliHome->Output->error("No gpio could be found") and return 0
+        unless $GPIO;
+    $self->IntelliHome->Output->error("No suitable driver could be found")
+        and return 0
+        unless $GPIO->driver;
+    eval {
+        load $GPIO->driver;
+        my $Driver = $GPIO->driver;
+        $Driver->new(
+            Pin       => $GPIO->Pin,
+            Connector => IntelliHome::Connector->new(
+                Node => $self->IntelliHome->Node
+            )
+        );
+        $Driver->$action;
+    };
+    if ($@) {
+        $self->IntelliHome->Output->error($@) and return 0;
+    }
+    return 1;
 }
 
 sub install {
@@ -82,7 +111,7 @@ sub install {
     #####################################
     ############## MONGODB ##############
     $self->Parser->Backend->installPlugin(
-        {   regex         => 'chiudi\s+(.*)',    #We have one global match here
+        {   regex         => 'chiudi\s+(.*)',   #We have one global match here
             plugin        => "Relay",
             language      => "it",
             plugin_method => "off"
