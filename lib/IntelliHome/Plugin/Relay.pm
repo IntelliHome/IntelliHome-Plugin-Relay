@@ -59,7 +59,7 @@ sub on {
     my $self = shift;
     my $Hypo = shift;
     my $tag  = join( " ", @{ $Hypo->result } );
-    chop $tag;
+    chomp $tag;
     $self->_command( $tag, "on" );
 }
 
@@ -67,7 +67,7 @@ sub off {
     my $self = shift;
     my $Hypo = shift;
     my $tag  = join( " ", @{ $Hypo->result } );
-    chop $tag;
+    chomp $tag;
     $self->_command( $tag, "off" );
 }
 
@@ -75,10 +75,11 @@ sub _command {
     my $self   = shift;
     my $tag    = shift;
     my $action = shift;
+     $self->IntelliHome->Output->failback->info("Searching $tag GPIO") ;
     my $GPIO   = $self->IntelliHome->Backend->search_gpio($tag);
-    $self->IntelliHome->Output->error("No gpio could be found") and return 0
+    $self->IntelliHome->Output->failback->error("No gpio could be found") and return 0
         unless $GPIO;
-    $self->IntelliHome->Output->error("No suitable driver could be found")
+    $self->IntelliHome->Output->failback->error("No suitable driver could be found")
         and return 0
         unless $GPIO->driver;
     eval {
