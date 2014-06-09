@@ -92,7 +92,7 @@ sub _command {
                 onPin     => $GPIO->Pin,
                 offPin    => shift @{ $GPIO->pins },
                 Connector => IntelliHome::Connector->new(
-                    Node => $self->IntelliHome->Node
+                    Node => $GPIO->node
                 )
             );
         }
@@ -100,7 +100,7 @@ sub _command {
             $Driver->new(
                 Pin       => $GPIO->Pin,
                 Connector => IntelliHome::Connector->new(
-                    Node => $self->IntelliHome->Node
+                    Node => $GPIO->node
                 )
             );
         }
