@@ -50,8 +50,8 @@ L<IntelliHome>
 use strict;
 use 5.008_005;
 our $VERSION = '0.01';
-use Moose;
-use Module::Load;
+use Moo;
+use IntelliHome::Utils qw(load_module);
 use IntelliHome::Connector;
 extends 'IntelliHome::Plugin::Base';
 
@@ -75,22 +75,35 @@ sub _command {
     my $self   = shift;
     my $tag    = shift;
     my $action = shift;
-     $self->IntelliHome->Output->failback->info("Searching $tag GPIO") ;
-    my $GPIO   = $self->IntelliHome->Backend->search_gpio($tag);
-    $self->IntelliHome->Output->failback->error("No gpio could be found") and return 0
+    $self->IntelliHome->Output->failback->info("Searching $tag GPIO");
+    my $GPIO = $self->IntelliHome->Backend->search_gpio($tag);
+    $self->IntelliHome->Output->failback->error("No gpio could be found")
+        and return 0
         unless $GPIO;
-    $self->IntelliHome->Output->failback->error("No suitable driver could be found")
+    $self->IntelliHome->Output->failback->error(
+        "No suitable driver could be found")
         and return 0
         unless $GPIO->driver;
     eval {
-        load $GPIO->driver;
+        load_module( $GPIO->driver );
         my $Driver = $GPIO->driver;
-        $Driver->new(
-            Pin       => $GPIO->Pin,
-            Connector => IntelliHome::Connector->new(
-                Node => $self->IntelliHome->Node
-            )
-        );
+        if ( @{ $GPIO->pins } > 0 ) {
+            $Driver->new(
+                onPin     => $GPIO->Pin,
+                offPin    => shift @{ $GPIO->pins },
+                Connector => IntelliHome::Connector->new(
+                    Node => $self->IntelliHome->Node
+                )
+            );
+        }
+        else {
+            $Driver->new(
+                Pin       => $GPIO->Pin,
+                Connector => IntelliHome::Connector->new(
+                    Node => $self->IntelliHome->Node
+                )
+            );
+        }
         $Driver->$action;
     };
     if ($@) {
