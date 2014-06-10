@@ -153,14 +153,5 @@ sub install {
     return 0;
 }
 
-sub remove {
-    my $self = shift;
-
-    ############## MONGODB ##############
-    $self->IntelliHome->Backend->removePlugin( { plugin => "Relay", } )
-        if $self->IntelliHome->Backend->isa("IntelliHome::Parser::DB::Mongo");
-    #####################################
-    return 0;
-}
 1;
 __END__
