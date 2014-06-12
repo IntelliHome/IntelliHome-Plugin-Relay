@@ -76,38 +76,38 @@ sub _command {
     my $tag    = shift;
     my $action = shift;
     $self->IntelliHome->Output->failback->info("Searching $tag GPIO");
-    my $GPIO = $self->IntelliHome->Backend->search_gpio($tag);
+    my @GPIOs = $self->IntelliHome->Backend->search_gpio($tag);
     $self->IntelliHome->Output->failback->error("No gpio could be found")
         and return 0
-        unless $GPIO;
-    $self->IntelliHome->Output->failback->error(
-        "No suitable driver could be found")
-        and return 0
-        unless $GPIO->driver;
-    eval {
-        load_module( $GPIO->driver );
-        my $Driver = $GPIO->driver;
-        if ( @{ $GPIO->pins } > 0 ) {
-            $Driver->new(
-                onPin     => $GPIO->Pin,
-                offPin    => shift @{ $GPIO->pins },
-                Connector => IntelliHome::Connector->new(
-                    Node => $GPIO->node
-                )
-            );
+        unless @GPIOs > 0;
+    foreach my $GPIO (@GPIOs) {
+        $self->IntelliHome->Output->failback->error(
+            "No suitable driver could be found for " . $GPIO->pin_id )
+            and next
+            unless $GPIO->driver;
+        eval {
+            load_module( $GPIO->driver );
+            my $Driver = $GPIO->driver;
+            if ( @{ $GPIO->pins } > 0 ) {
+                $Driver->new(
+                    onPin  => $GPIO->Pin,
+                    offPin => shift @{ $GPIO->pins },
+                    Connector =>
+                        IntelliHome::Connector->new( Node => $GPIO->node )
+                );
+            }
+            else {
+                $Driver->new(
+                    Pin => $GPIO->Pin,
+                    Connector =>
+                        IntelliHome::Connector->new( Node => $GPIO->node )
+                );
+            }
+            $Driver->$action;
+        };
+        if ($@) {
+            $self->IntelliHome->Output->error($@) and return 0;
         }
-        else {
-            $Driver->new(
-                Pin       => $GPIO->Pin,
-                Connector => IntelliHome::Connector->new(
-                    Node => $GPIO->node
-                )
-            );
-        }
-        $Driver->$action;
-    };
-    if ($@) {
-        $self->IntelliHome->Output->error($@) and return 0;
     }
     return 1;
 }
@@ -117,7 +117,6 @@ sub install {
     ############## MONGODB ##############
     $self->Parser->Backend->installPlugin(
         {   regex         => 'close\s+(.*)',    #We have one global match here
-            plugin        => "Relay",
             language      => "en",
             plugin_method => "off"
         }
@@ -126,7 +125,6 @@ sub install {
     ############## MONGODB ##############
     $self->Parser->Backend->installPlugin(
         {   regex         => 'chiudi\s+(.*)',   #We have one global match here
-            plugin        => "Relay",
             language      => "it",
             plugin_method => "off"
         }
@@ -135,7 +133,6 @@ sub install {
     ############## MONGODB ##############
     $self->Parser->Backend->installPlugin(
         {   regex         => 'open\s+(.*)',    #We have one global match here
-            plugin        => "Relay",
             language      => "en",
             plugin_method => "on"
         }
@@ -144,7 +141,6 @@ sub install {
     ############## MONGODB ##############
     $self->Parser->Backend->installPlugin(
         {   regex         => 'apri\s+(.*)',    #We have one global match here
-            plugin        => "Relay",
             language      => "it",
             plugin_method => "on"
         }
