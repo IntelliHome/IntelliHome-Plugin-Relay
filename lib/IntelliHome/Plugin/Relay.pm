@@ -52,7 +52,7 @@ use 5.008_005;
 our $VERSION = '0.01';
 use Moo;
 use IntelliHome::Utils qw(load_module);
-use IntelliHome::Connector;
+use IntelliHome::Connector qw(STATUS_MSG GPIO_MSG);
 extends 'IntelliHome::Plugin::Base';
 
 sub on {
@@ -112,40 +112,56 @@ sub _command {
     return 1;
 }
 
+sub _status {
+    my $self = shift;
+    my $id   = shift; #we should retrieve it from pins or pin_id in the schema
+    my $rs   = shift; #return status
+    my $GPIO = $self->Parser->Backend->search_gpio_pin($id);
+    $GPIO->status($rs);
+    $GPIO->save;
+}
+
 sub install {
     my $self = shift;
-    ############## MONGODB ##############
+    ############## closing ##############
     $self->Parser->Backend->installPlugin(
         {   regex         => 'close\s+(.*)',    #We have one global match here
             language      => "en",
             plugin_method => "off"
-        }
-    ) if $self->Parser->Backend->isa("IntelliHome::Parser::DB::Mongo");
-    #####################################
-    ############## MONGODB ##############
-    $self->Parser->Backend->installPlugin(
+        },
         {   regex         => 'chiudi\s+(.*)',   #We have one global match here
             language      => "it",
             plugin_method => "off"
         }
-    ) if $self->Parser->Backend->isa("IntelliHome::Parser::DB::Mongo");
-    #####################################
-    ############## MONGODB ##############
+    );
+    ############## opening ##############
     $self->Parser->Backend->installPlugin(
-        {   regex         => 'open\s+(.*)',    #We have one global match here
+        {   regex         => 'open\s+(.*)',     #We have one global match here
             language      => "en",
             plugin_method => "on"
-        }
-    ) if $self->Parser->Backend->isa("IntelliHome::Parser::DB::Mongo");
-    #####################################
-    ############## MONGODB ##############
-    $self->Parser->Backend->installPlugin(
-        {   regex         => 'apri\s+(.*)',    #We have one global match here
+        },
+        {   regex         => 'apri\s+(.*)',     #We have one global match here
             language      => "it",
             plugin_method => "on"
         }
-    ) if $self->Parser->Backend->isa("IntelliHome::Parser::DB::Mongo");
-    #####################################
+    );
+
+    $self->app->event->on(
+
+        #Handling RPC request
+        # RPC requests are processed in $tag, on/off
+        GPIO_MSG =>
+            sub { shift->IntelliHome->Plugins->{"Relay"}->_command(@_); }
+    );
+
+    $self->app->event->on(
+
+        #Handling STATUS , it's in the form : id, response_status
+        STATUS_MSG => sub {
+            shift->IntelliHome->Plugins->{"Relay"}->_status(@_);
+        }
+    );
+
     return 0;
 }
 
