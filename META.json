@@ -1,5 +1,5 @@
 {
-   "abstract" : "Blah blah blah",
+   "abstract" : "Relay plugin for Google@Home",
    "author" : [
       "mudler <mudler@dark-lab.net>"
    ],
@@ -46,6 +46,17 @@
       }
    },
    "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/mudler/IntelliHome-Plugin-Relay/issues"
+      },
+      "homepage" : "https://github.com/mudler/IntelliHome-Plugin-Relay",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/mudler/IntelliHome-Plugin-Relay.git",
+         "web" : "https://github.com/mudler/IntelliHome-Plugin-Relay"
+      }
+   },
    "version" : "0.01"
 }
 
