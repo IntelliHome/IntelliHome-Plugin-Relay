@@ -90,7 +90,7 @@ sub _command {
             my $Driver = $GPIO->driver;
             if ( @{ $GPIO->pins } > 0 ) {
                 $Driver->new(
-                    onPin  => $GPIO->Pin,
+                    onPin  => $GPIO->pin_id,
                     offPin => shift @{ $GPIO->pins },
                     Connector =>
                         IntelliHome::Connector->new( Node => $GPIO->node )
@@ -98,7 +98,7 @@ sub _command {
             }
             else {
                 $Driver->new(
-                    Pin => $GPIO->Pin,
+                    Pin => $GPIO->pin_id,
                     Connector =>
                         IntelliHome::Connector->new( Node => $GPIO->node )
                 );
@@ -118,7 +118,7 @@ sub _status {
     my $rs   = shift; #return status
     my $GPIO = $self->Parser->Backend->search_gpio_pin($id);
     $GPIO->status($rs);
-    $GPIO->save;
+    return $GPIO->can("update") ? $GPIO->update : $GPIO->save;
 }
 
 sub install {
