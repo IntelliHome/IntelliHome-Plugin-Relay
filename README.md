@@ -11,6 +11,18 @@ IntelliHome::Plugin::Relay - Relay plugin for Google@Home
 
 IntelliHome::Plugin::Relay is a plugin that enables control of gpio's
 
+# EVENTS
+
+This plugin listen on the following events:
+
+- GPIO\_MSG
+
+    Listen to GPIO\_MSG, that can be emitted by the RPC server, it dispatch the command to the node (on/off)
+
+- STATUS\_MSG
+
+    Listen to STATUS\_MSG, it handles the update of the node's Gpio status into the database
+
 # METHODS
 
 - on
