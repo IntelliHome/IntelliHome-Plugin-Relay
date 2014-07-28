@@ -88,11 +88,15 @@ sub off {
 }
 
 sub _command {
-    my $self   = shift;
-    my $tag    = shift;
-    my $action = shift;
+    my $self      = shift;
+    my $tag       = shift;
+    my $action    = shift;
+    my $id_search = shift || 0;
     $self->IntelliHome->Output->failback->info("Searching $tag GPIO");
-    my @GPIOs = $self->IntelliHome->Backend->search_gpio($tag);
+    my @GPIOs
+        = ( $id_search == 1 )
+        ? $self->IntelliHome->Backend->search_gpio_id($tag)
+        : $self->IntelliHome->Backend->search_gpio($tag);
     $self->IntelliHome->Output->failback->error("No gpio could be found")
         and return 0
         unless @GPIOs > 0;
