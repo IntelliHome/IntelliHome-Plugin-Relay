@@ -23,7 +23,12 @@ This plugin listen on the following events:
 
 =item GPIO_MSG
 
-Listen to GPIO_MSG, that can be emitted by the RPC server, it dispatch the command to the node (on/off)
+Listen to GPIO_MSG, that can be emitted by the RPC server, it dispatch the command to the node (on/off).
+Arguments to the event are: tag/id, action, bool
+Where:
+the tag/id is the tag(or the id) of the GPIO in the database
+the action is the method executed by the driver
+the bool value if set to 1 enable gpio search thru id instead of tag wich is the default behaviour
 
 =item STATUS_MSG
 
@@ -102,7 +107,7 @@ sub _command {
         unless @GPIOs > 0;
     foreach my $GPIO (@GPIOs) {
         $self->IntelliHome->Output->failback->error(
-            "No suitable driver could be found for " . $GPIO->pin_id )
+            "No suitable driver could be found " )
             and next
             unless $GPIO->driver;
         eval {
