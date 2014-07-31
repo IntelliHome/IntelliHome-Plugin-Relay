@@ -15,6 +15,24 @@ IntelliHome::Plugin::Relay - Relay plugin for Google@Home
 
 IntelliHome::Plugin::Relay is a plugin that enables control of gpio's
 
+=head1 INSTALLATION
+
+Clone the repository
+
+    git clone https://github.com/IntelliHome/IntelliHome-Plugin-Relay.git
+    cd IntelliHome-Plugin-Relay
+    perl Build.pl
+    ./Build
+    ./Build install
+
+or just use cpanm
+
+    cpanm https://github.com/IntelliHome/IntelliHome-Plugin-Relay.git
+
+after that you can add the triggers to your IntelliHome setup
+
+    $ ./intellihome-master -i Relay
+
 =head1 EVENTS
 
 This plugin listen on the following events:
