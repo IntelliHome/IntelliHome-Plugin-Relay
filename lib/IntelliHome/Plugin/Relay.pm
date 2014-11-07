@@ -88,7 +88,7 @@ L<IntelliHome>
 
 use strict;
 use 5.008_005;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 use Moo;
 use IntelliHome::Utils qw(load_module);
 use IntelliHome::Connector qw(STATUS_MSG GPIO_MSG);
@@ -125,7 +125,7 @@ sub _command {
         unless @GPIOs > 0;
     foreach my $GPIO (@GPIOs) {
         $self->IntelliHome->Output->failback->error(
-            "No suitable driver could be found " )
+            "No suitable driver could be found ")
             and next
             unless $GPIO->driver;
         eval {
@@ -169,21 +169,25 @@ sub install {
     ############## closing ##############
     $self->Parser->Backend->installPlugin(
         {   regex         => 'close\s+(.*)',    #We have one global match here
+            command       => 'close',
             language      => "en",
             plugin_method => "off"
         },
         {   regex         => 'chiudi\s+(.*)',   #We have one global match here
+            command       => 'chiudi',
             language      => "it",
             plugin_method => "off"
         }
     );
     ############## opening ##############
     $self->Parser->Backend->installPlugin(
-        {   regex         => 'open\s+(.*)',     #We have one global match here
+        {   regex   => 'open\s+(.*)',           #We have one global match here
+            command => 'open',
             language      => "en",
             plugin_method => "on"
         },
-        {   regex         => 'apri\s+(.*)',     #We have one global match here
+        {   regex   => 'apri\s+(.*)',           #We have one global match here
+            command => 'apri',
             language      => "it",
             plugin_method => "on"
         }
